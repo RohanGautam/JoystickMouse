@@ -1,48 +1,39 @@
 import pyautogui
+import numpy as np
 import time
-import threading
+pyautogui.PAUSE = 0.01 #0.1 by default, making it smaller for lower latency. Failsafe is still usable in this case.
 
-# pyautogui.moveRel(0, 100, duration=5)
+scaling_factor = 5
+# direction = np.array([1,1])
+direction = np.array([0,0])
+direction_normalized = direction/np.linalg.norm(direction)
 
-startPosition = pyautogui.position()
-previous = startPosition
-counter, startCount, endCount = 0, 0, 0
+direction = direction_normalized*scaling_factor
+direction[np.isnan(direction)] = 0
 
-startVector, endVector = startPosition, startPosition  # initially
+previous = pyautogui.position()
 
+firstIteration = True
 while True:
     current = pyautogui.position()
 
-    if (current != previous) and (startCount == 0):
-        print("Started")
-        startVector = current
-        startCount += 1
-        endCount = 0
-    # counter%2000==0 to intruduce some delay. make this dependant on time maybe
-    elif (current == previous) and (counter % 10000 == 0) and (endCount == 0):
-        print("Ended")
-        endVector = current
-        startCount = 0
-        endCount += 1
-        # the movement below needs to be carried out in the background so that start and end for this thing's movement can be picked up by start and end
-        # moveMouse_thread = threading.Thread(target=moveMouse, args=(direction,))
-        # moveMouse_thread.daemon = True  
-        # moveMouse_thread.start()
-    
-    if(startCount==0 and endCount != 0):
-        print("moving")
-        # # determining the direction vector based on the start and  end vector. Direction and magnitude based on start and end vectors
-        # directionVector = pyautogui.Point(endVector.x - startVector.x, endVector.y - startVector.y)
-        # startVector = endVector
-        # pyautogui.moveRel(directionVector.x, directionVector.y, duration=1)
-        # endVector = pyautogui.position()
-        # current = pyautogui.position()
+    if not firstIteration:
+        current_direction = np.array([current.x-previous.x, current.y-previous.y])
+        current_direction_normalized = current_direction/np.linalg.norm(current_direction)
+        vectorLen = np.linalg.norm(current_direction)
+        current_direction = current_direction_normalized*scaling_factor
+        current_direction[np.isnan(current_direction)] = 0
+        # print(np.allclose(current_direction, direction)) # `np.allclose` sees if values are close enough
+        same_as_old_dir = np.allclose(current_direction, direction)
+        # if it changes direction, make it go in a new direction
+        if (same_as_old_dir == False):
+            print(f'length of movement vector is {vectorLen}')
+            if(vectorLen <7):
+                direction=np.array([0,0]) # stops it
+            else:
+                direction = current_direction
 
-
+    pyautogui.moveRel(direction[0], direction[1])
 
     previous = current
-    counter += 1
-
-# how to change direction by user once mouse is moving?
-# look at joystick drivers https://github.com/ros-drivers/joystick_drivers_tutorials/blob/master/turtle_teleop/scripts/turtle_teleop_joy.py
-# look at if current follows line, if breaks line, form a new line from old pos to new point
+    firstIteration = False
