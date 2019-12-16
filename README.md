@@ -11,3 +11,4 @@ A script to emulate joystick-like cursor movement using a mouse/trackpad.
 * Cursor continues in the direction that the user moves it in.
 * Small movement in a direction = cursor continues moving slowly
 * Large movement in a direction = cursor continues moving fast
+* making a small movement in an opposing direction (while the cursor is moving) stops the movement.
