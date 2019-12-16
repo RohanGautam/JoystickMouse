@@ -1,6 +1,5 @@
 import pyautogui
 import numpy as np
-import time
 
 pyautogui.PAUSE = 0.01 #0.1 by default, making it smaller for lower latency. Failsafe is still usable in this case.
 movementVectorSum_threshold = 10 # Increase/decrease to make it easier/harder to stop the movement. If the sum of userMovementVectorLengths is less than this, it stops the pointer.
